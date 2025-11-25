@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financeiro - Análise de Ativos</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Dashboard Financeiro</h1>
+            <p class="subtitle">Análise de Ativos - Ações e Criptomoedas</p>
+        </header>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="marketFilter">Tipo de Mercado:</label>
+                <select id="marketFilter">
+                    <option value="all">Todos</option>
+                    <option value="STOCK">Ações</option>
+                    <option value="CRYPTO">Criptomoedas</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="assetFilter">Ativo:</label>
+                <select id="assetFilter">
+                    <option value="all">Todos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="trendFilter">Sinal de Tendência:</label>
+                <select id="trendFilter">
+                    <option value="all">Todos</option>
+                    <option value="NEUTRAL">Neutro</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-content">
+                    <h3>Total de Ativos</h3>
+                    <p class="stat-value" id="totalAssets">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                    <h3>Preço Médio</h3>
+                    <p class="stat-value" id="avgPrice">R$ 0.00</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <h3>Retorno Médio</h3>
+                    <p class="stat-value" id="avgReturn">0.00%</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-content">
+                    <h3>Volatilidade Média</h3>
+                    <p class="stat-value" id="avgVolatility">0.00</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h2>Distribuição por Tipo de Mercado</h2>
+                <canvas id="marketChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h2>Top 10 Ativos por Preço</h2>
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h2>Retorno Diário (%)</h2>
+                <canvas id="returnChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h2>Volatilidade 7 Dias</h2>
+                <canvas id="volatilityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <h2>Tabela de Dados</h2>
+            <div class="table-controls">
+                <input type="text" id="searchInput" placeholder="Buscar por símbolo...">
+                <div class="table-info">
+                    <span id="tableInfo">Mostrando 0 registros</span>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Símbolo</th>
+                            <th>Data</th>
+                            <th>Preço</th>
+                            <th>Retorno %</th>
+                            <th>SMA 7d</th>
+                            <th>SMA 21d</th>
+                            <th>Volatilidade</th>
+                            <th>Drawdown %</th>
+                            <th>Sinal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
