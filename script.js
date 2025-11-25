@@ -5,7 +5,7 @@ let charts = {};
 // Carregar dados do CSV
 async function loadData() {
     try {
-        const response = await fetch('view_gold.csv');
+        const response = await fetch('view_gold_final.csv');
         const text = await response.text();
         const lines = text.split('\n').filter(line => line.trim());
         const headers = lines[0].split(',');
@@ -15,23 +15,26 @@ async function loadData() {
             return {
                 market_type: values[0],
                 asset_symbol: values[1],
-                ref_date: values[2],
-                close_price: parseFloat(values[3]) || 0,
-                daily_return_pct: values[4] === 'NULL' ? null : parseFloat(values[4]) || 0,
-                sma_7d: parseFloat(values[5]) || 0,
-                sma_21d: parseFloat(values[6]) || 0,
-                volatility_7d: parseFloat(values[7]) || 0,
-                drawdown_pct: parseFloat(values[8]) || 0,
-                trend_signal: values[9]
+                asset_name: values[2] || values[1],
+                ref_date: values[3],
+                close_price: parseFloat(values[4]) || 0,
+                daily_return_pct: values[5] === 'NULL' || values[5] === '' ? null : parseFloat(values[5]) || null,
+                sma_7d: parseFloat(values[6]) || 0,
+                sma_21d: parseFloat(values[7]) || 0,
+                volatility_7d: parseFloat(values[8]) || 0,
+                roc_14d_pct: values[9] === '' || values[9] === 'NULL' ? null : parseFloat(values[9]) || null,
+                drawdown_pct: parseFloat(values[10]) || 0,
+                volume_ratio: parseFloat(values[11]) || 0,
+                trend_signal: values[12] || 'NEUTRAL'
             };
-        }).filter(row => row.asset_symbol);
+        }).filter(row => row.asset_symbol && row.asset_symbol.trim() !== '');
         
         filteredData = [...allData];
         initializeFilters();
         updateDashboard();
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        alert('Erro ao carregar o arquivo CSV. Certifique-se de que o arquivo está no mesmo diretório.');
+        alert('Erro ao carregar o arquivo CSV. Certifique-se de que o arquivo view_gold_final.csv está no mesmo diretório.');
     }
 }
 
@@ -99,7 +102,8 @@ function applySearch() {
     
     if (searchTerm) {
         displayData = filteredData.filter(row => 
-            row.asset_symbol.toLowerCase().includes(searchTerm)
+            row.asset_symbol.toLowerCase().includes(searchTerm) ||
+            (row.asset_name && row.asset_name.toLowerCase().includes(searchTerm))
         );
     }
     
@@ -108,21 +112,47 @@ function applySearch() {
     updateTable(displayData);
 }
 
-// Atualizar estatísticas
+// Atualizar estatísticas (10 KPIs)
 function updateStats(data) {
+    // KPI 1: Total de Ativos Únicos
     const totalAssets = new Set(data.map(d => d.asset_symbol)).size;
-    const prices = data.map(d => d.close_price).filter(p => p > 0);
-    const returns = data.map(d => d.daily_return_pct).filter(r => r !== null);
-    const volatilities = data.map(d => d.volatility_7d).filter(v => v > 0);
     
+    // KPI 2: Total de Registros
+    const totalRecords = data.length;
+    
+    // KPI 3: Preço Médio
+    const prices = data.map(d => d.close_price).filter(p => p > 0);
     const avgPrice = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+    
+    // KPI 4: Retorno Médio Diário
+    const returns = data.map(d => d.daily_return_pct).filter(r => r !== null);
     const avgReturn = returns.length > 0 ? returns.reduce((a, b) => a + b, 0) / returns.length : 0;
+    
+    // KPI 5: Volatilidade Média (7 dias)
+    const volatilities = data.map(d => d.volatility_7d).filter(v => v > 0);
     const avgVolatility = volatilities.length > 0 ? volatilities.reduce((a, b) => a + b, 0) / volatilities.length : 0;
     
+    // KPI 6: ROC Médio (14 dias)
+    const rocs = data.map(d => d.roc_14d_pct).filter(r => r !== null);
+    const avgROC = rocs.length > 0 ? rocs.reduce((a, b) => a + b, 0) / rocs.length : 0;
+    
+    // KPI 7: Volume Ratio Médio
+    const volumeRatios = data.map(d => d.volume_ratio).filter(v => v > 0);
+    const avgVolumeRatio = volumeRatios.length > 0 ? volumeRatios.reduce((a, b) => a + b, 0) / volumeRatios.length : 0;
+    
+    // KPI 8: Drawdown Médio
+    const drawdowns = data.map(d => d.drawdown_pct).filter(d => d !== 0);
+    const avgDrawdown = drawdowns.length > 0 ? drawdowns.reduce((a, b) => a + b, 0) / drawdowns.length : 0;
+    
+    // Atualizar elementos no DOM
     document.getElementById('totalAssets').textContent = totalAssets;
+    document.getElementById('totalRecords').textContent = totalRecords.toLocaleString('pt-BR');
     document.getElementById('avgPrice').textContent = formatCurrency(avgPrice);
     document.getElementById('avgReturn').textContent = formatPercent(avgReturn);
     document.getElementById('avgVolatility').textContent = avgVolatility.toFixed(4);
+    document.getElementById('avgROC').textContent = formatPercent(avgROC);
+    document.getElementById('avgVolumeRatio').textContent = avgVolumeRatio.toFixed(2);
+    document.getElementById('avgDrawdown').textContent = formatPercent(avgDrawdown);
 }
 
 // Atualizar gráficos
@@ -308,7 +338,8 @@ function updateTable(data) {
     
     if (searchTerm) {
         displayData = data.filter(row => 
-            row.asset_symbol.toLowerCase().includes(searchTerm)
+            row.asset_symbol.toLowerCase().includes(searchTerm) ||
+            (row.asset_name && row.asset_name.toLowerCase().includes(searchTerm))
         );
     }
     
@@ -319,18 +350,23 @@ function updateTable(data) {
         tr.innerHTML = `
             <td><span class="badge badge-${row.market_type.toLowerCase()}">${row.market_type}</span></td>
             <td><strong>${row.asset_symbol}</strong></td>
+            <td>${row.asset_name || row.asset_symbol}</td>
             <td>${formatDate(row.ref_date)}</td>
             <td>${formatCurrency(row.close_price)}</td>
             <td class="${row.daily_return_pct !== null ? (row.daily_return_pct >= 0 ? 'positive' : 'negative') : 'neutral'}">
                 ${row.daily_return_pct !== null ? formatPercent(row.daily_return_pct) : 'N/A'}
             </td>
+            <td class="${row.roc_14d_pct !== null ? (row.roc_14d_pct >= 0 ? 'positive' : 'negative') : 'neutral'}">
+                ${row.roc_14d_pct !== null ? formatPercent(row.roc_14d_pct) : 'N/A'}
+            </td>
             <td>${formatCurrency(row.sma_7d)}</td>
             <td>${formatCurrency(row.sma_21d)}</td>
             <td>${row.volatility_7d.toFixed(4)}</td>
+            <td>${row.volume_ratio.toFixed(2)}</td>
             <td class="${row.drawdown_pct >= 0 ? 'positive' : 'negative'}">
                 ${formatPercent(row.drawdown_pct)}
             </td>
-            <td><span class="badge badge-neutral">${row.trend_signal}</span></td>
+            <td><span class="badge badge-${getTrendBadgeClass(row.trend_signal)}">${row.trend_signal}</span></td>
         `;
         tbody.appendChild(tr);
     });
@@ -347,6 +383,16 @@ function updateDashboard() {
 
 // Funções de formatação
 function formatCurrency(value) {
+    if (!value || isNaN(value) || value === 0) {
+        return 'R$ 0,00';
+    }
+    
+    // Para valores muito grandes, usar formato mais compacto
+    if (value >= 1000000) {
+        const millions = value / 1000000;
+        return 'R$ ' + millions.toFixed(2).replace('.', ',') + 'M';
+    }
+    
     if (value >= 1000) {
         return new Intl.NumberFormat('pt-BR', {
             style: 'currency',
@@ -355,7 +401,10 @@ function formatCurrency(value) {
             maximumFractionDigits: 2
         }).format(value);
     }
+    
     return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
         minimumFractionDigits: 2,
         maximumFractionDigits: 8
     }).format(value);
@@ -371,14 +420,25 @@ function formatPercent(value) {
 
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('pt-BR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    }).format(date);
+    try {
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('pt-BR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(date);
+    } catch (e) {
+        return dateString;
+    }
+}
+
+// Função auxiliar para classe de badge de tendência
+function getTrendBadgeClass(trend) {
+    if (trend === 'UPTREND') return 'uptrend';
+    if (trend === 'DOWNTREND') return 'downtrend';
+    return 'neutral';
 }
 
 // Carregar dados ao iniciar

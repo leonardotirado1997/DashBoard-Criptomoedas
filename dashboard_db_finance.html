@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard DB & Finance - Análise Avançada</title>
+    <link rel="stylesheet" href="style_db_finance.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1 class="company-name">Dashboard Financeiro - Análise Temporal</h1>
+            </div>
+            <div class="header-center">
+                <div class="filters-container">
+                    <div class="filter-item">
+                        <label for="marketTypeFilter">Tipo:</label>
+                        <select id="marketTypeFilter" class="filter-select">
+                            <option value="all">Todos</option>
+                            <option value="STOCK">Ações</option>
+                            <option value="CRYPTO">Criptomoedas</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="assetFilter">Ativo:</label>
+                        <select id="assetFilter" class="filter-select">
+                            <option value="all">Todos os Ativos</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="dateRangeFilter">Período:</label>
+                        <select id="dateRangeFilter" class="filter-select">
+                            <option value="all">Todo o Período</option>
+                            <option value="7d">Últimos 7 dias</option>
+                            <option value="30d">Últimos 30 dias</option>
+                            <option value="90d">Últimos 90 dias</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <span class="current-date" id="currentDate"></span>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <!-- Sidebar Esquerdo -->
+            <aside class="sidebar">
+                <!-- Seção Métricas Técnicas (KPIs do index.html) -->
+                <section class="patrimonio-section">
+                    <h2 class="sidebar-title">KPIs Principais</h2>
+                    <div class="patrimonio-item">
+                        <div class="patrimonio-label">Total de Ativos</div>
+                        <div class="patrimonio-value" id="totalAssets">0</div>
+                    </div>
+                    <div class="patrimonio-item">
+                        <div class="patrimonio-label">Preço Médio</div>
+                        <div class="patrimonio-value" id="avgPrice">R$ 0,00</div>
+                    </div>
+                    <div class="patrimonio-item">
+                        <div class="patrimonio-label">Retorno Médio</div>
+                        <div class="patrimonio-value" id="avgReturn">0.00%</div>
+                    </div>
+                    <div class="patrimonio-item">
+                        <div class="patrimonio-label">Volatilidade Média</div>
+                        <div class="patrimonio-value" id="avgVolatility">0.00</div>
+                    </div>
+                    <div class="patrimonio-item">
+                        <div class="patrimonio-label">Total de Registros</div>
+                        <div class="patrimonio-value" id="totalRegistros">0</div>
+                    </div>
+                    <div class="patrimonio-item">
+                        <div class="patrimonio-label">Ativos Únicos</div>
+                        <div class="patrimonio-value" id="ativosUnicos">0</div>
+                    </div>
+                    <div class="patrimonio-item performance">
+                        <div class="patrimonio-label">ROC Médio (14d)</div>
+                        <div class="patrimonio-value" id="rocMedio">0.00%</div>
+                        <div class="patrimonio-percent positive" id="rocMedioPercent">0.00%</div>
+                    </div>
+                </section>
+
+                <!-- Gráfico de Alocação Ações vs Cripto -->
+                <section class="alocacao-section">
+                    <h2 class="sidebar-title">Distribuição</h2>
+                    <div class="chart-container-donut">
+                        <canvas id="alocacaoChart"></canvas>
+                    </div>
+                    <div class="chart-legend" id="alocacaoLegend"></div>
+                </section>
+
+                <!-- Resumo Estatísticas -->
+                <section class="carteira-resumo">
+                    <h2 class="sidebar-title">Estatísticas Avançadas</h2>
+                    <div class="resumo-item">
+                        <div class="resumo-label">Volume Ratio Médio</div>
+                        <div class="resumo-value" id="volumeRatioMedio">0.00</div>
+                    </div>
+                    <div class="resumo-item">
+                        <div class="resumo-label">Drawdown Médio</div>
+                        <div class="resumo-value negative" id="drawdownMedio">0.00%</div>
+                    </div>
+                </section>
+            </aside>
+
+            <!-- Área Principal -->
+            <main class="main-content">
+                <h1 class="main-title">DASHBOARD</h1>
+
+                <!-- Gráficos do index.html -->
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <h3 class="chart-title">Distribuição por Tipo de Mercado</h3>
+                        <canvas id="marketChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3 class="chart-title">Top 10 Ativos por Preço</h3>
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <h3 class="chart-title">Retorno Diário (%)</h3>
+                        <canvas id="returnChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3 class="chart-title">Volatilidade 7 Dias</h3>
+                        <canvas id="volatility7dChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráficos Temporais Avançados -->
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <h3 class="chart-title">Evolução de Preços ao Longo do Tempo</h3>
+                        <canvas id="timeSeriesChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3 class="chart-title">Distribuição: Ações vs Criptomoedas</h3>
+                        <canvas id="marketTypeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráficos de Análise -->
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <h3 class="chart-title">Top 20 Ativos por Valor de Mercado</h3>
+                        <canvas id="topAtivosChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3 class="chart-title">Evolução de Volatilidade (7 dias)</h3>
+                        <canvas id="volatilityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tabela de Dados Temporais -->
+                <div class="table-section">
+                    <h2 class="section-title">Dados Temporais - Análise Histórica</h2>
+                    <div class="table-controls">
+                        <input type="text" id="searchInput" placeholder="Buscar por símbolo ou nome..." class="search-input">
+                        <div class="table-info">
+                            <span id="tableInfo">Mostrando 0 registros</span>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="carteiraTable">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Símbolo</th>
+                                    <th>Nome</th>
+                                    <th>Preço</th>
+                                    <th>Retorno Diário (%)</th>
+                                    <th>ROC 14d (%)</th>
+                                    <th>SMA 7d</th>
+                                    <th>SMA 21d</th>
+                                    <th>Volatilidade 7d</th>
+                                    <th>Volume Ratio</th>
+                                    <th>Drawdown (%)</th>
+                                    <th>Tendência</th>
+                                </tr>
+                            </thead>
+                            <tbody id="carteiraTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="script_db_finance.js"></script>
+</body>
+</html>

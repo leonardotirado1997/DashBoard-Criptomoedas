@@ -10,7 +10,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Dashboard LR - Finance </h1>
+            <h1>Dashboard L&R - Finance </h1>
             <p class="subtitle">Análise de Ativos - Ações e Criptomoedas</p>
         </header>
 
@@ -34,6 +34,8 @@
                 <select id="trendFilter">
                     <option value="all">Todos</option>
                     <option value="NEUTRAL">Neutro</option>
+                    <option value="UPTREND">Alta</option>
+                    <option value="DOWNTREND">Baixa</option>
                 </select>
             </div>
         </div>
@@ -47,6 +49,13 @@
                 </div>
             </div>
             <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <h3>Total de Registros</h3>
+                    <p class="stat-value" id="totalRecords">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-icon">💰</div>
                 <div class="stat-content">
                     <h3>Preço Médio</h3>
@@ -54,17 +63,38 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">📊</div>
+                <div class="stat-icon">📉</div>
                 <div class="stat-content">
-                    <h3>Retorno Médio</h3>
+                    <h3>Retorno Médio Diário</h3>
                     <p class="stat-value" id="avgReturn">0.00%</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">⚡</div>
                 <div class="stat-content">
-                    <h3>Volatilidade Média</h3>
+                    <h3>Volatilidade Média (7d)</h3>
                     <p class="stat-value" id="avgVolatility">0.00</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🚀</div>
+                <div class="stat-content">
+                    <h3>ROC Médio (14d)</h3>
+                    <p class="stat-value" id="avgROC">0.00%</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-content">
+                    <h3>Volume Ratio Médio</h3>
+                    <p class="stat-value" id="avgVolumeRatio">0.00</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📉</div>
+                <div class="stat-content">
+                    <h3>Drawdown Médio</h3>
+                    <p class="stat-value" id="avgDrawdown">0.00%</p>
                 </div>
             </div>
         </div>
@@ -94,7 +124,7 @@
         <div class="table-section">
             <h2>Tabela de Dados</h2>
             <div class="table-controls">
-                <input type="text" id="searchInput" placeholder="Buscar por símbolo...">
+                <input type="text" id="searchInput" placeholder="Buscar por símbolo ou nome...">
                 <div class="table-info">
                     <span id="tableInfo">Mostrando 0 registros</span>
                 </div>
@@ -105,12 +135,15 @@
                         <tr>
                             <th>Tipo</th>
                             <th>Símbolo</th>
+                            <th>Nome</th>
                             <th>Data</th>
                             <th>Preço</th>
                             <th>Retorno %</th>
+                            <th>ROC 14d %</th>
                             <th>SMA 7d</th>
                             <th>SMA 21d</th>
                             <th>Volatilidade</th>
+                            <th>Volume Ratio</th>
                             <th>Drawdown %</th>
                             <th>Sinal</th>
                         </tr>
